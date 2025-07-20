@@ -1,51 +1,101 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { useState } from "react";
+import { motion } from "framer-motion";
 
 const terapii = [
-  { id: 'inforenergetica', nume: 'Terapie Inforenergetica', durata: '1:30', pret: 'va urma' },
-  { id: 'thetahealing', nume: 'ThetaHealing și Regresie', durata: '2-3 ore', pret: 'va urma' },
-  { id: 'terapie3', nume: 'Terapie 3 (completat ulterior)', durata: '-', pret: '-' },
-  { id: 'terapie4', nume: 'Terapie 4 (completat ulterior)', durata: '-', pret: '-' },
-]
+  {
+    id: "inforenergetica",
+    nume: "Terapie Inforenergetica",
+    durata: "1:30",
+    pret: "va urma",
+  },
+  {
+    id: "thetahealing",
+    nume: "ThetaHealing și Regresie",
+    durata: "2-3 ore",
+    pret: "va urma",
+  },
+  {
+    id: "terapie3",
+    nume: "Terapie 3 (completat ulterior)",
+    durata: "-",
+    pret: "-",
+  },
+  {
+    id: "terapie4",
+    nume: "Terapie 4 (completat ulterior)",
+    durata: "-",
+    pret: "-",
+  },
+];
 
 const oreDisponibile = [
-  '10:00', '11:00', '12:00', '13:00',
-  '14:00', '15:00', '16:00', '17:00', '18:00',
-]
+  "10:00",
+  "11:00",
+  "12:00",
+  "13:00",
+  "14:00",
+  "15:00",
+  "16:00",
+  "17:00",
+  "18:00",
+];
 
 export default function ProgramarePage() {
   const [formData, setFormData] = useState({
-    nume: '',
-    email: '',
-    telefon: '',
+    nume: "",
+    email: "",
+    telefon: "",
     terapie: terapii[0].id,
-    data: '',
+    data: "",
     ora: oreDisponibile[0],
-    comentarii: '',
-  })
+    comentarii: "",
+  });
 
-  const [submitted, setSubmitted] = useState(false)
+  const [submitted, setSubmitted] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
-  }
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log('Programare:', formData)
-    setSubmitted(true)
-    setFormData({
-      nume: '',
-      email: '',
-      telefon: '',
-      terapie: terapii[0].id,
-      data: '',
-      ora: oreDisponibile[0],
-      comentarii: '',
-    })
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch("http://localhost:5000/programari", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Eroare la trimiterea programării");
+      }
+
+      const data = await response.json();
+      alert(data.message || "Programare trimisă cu succes!");
+
+      // Resetează formularul după trimitere
+      setFormData({
+        nume: "",
+        email: "",
+        telefon: "",
+        terapie: terapii[0].id,
+        data: "",
+        ora: oreDisponibile[0],
+        comentarii: "",
+      });
+    } catch (error) {
+      alert("A apărut o eroare, încearcă din nou.");
+      console.error(error);
+    }
+  };
 
   return (
     <section className="max-w-3xl mx-auto px-4 py-16 text-gray-800">
@@ -68,10 +118,16 @@ export default function ProgramarePage() {
         </motion.div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-2xl shadow-md">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-6 bg-white p-6 rounded-2xl shadow-md"
+      >
         {/* Nume */}
         <div>
-          <label htmlFor="nume" className="block mb-1 font-medium text-teal-700">
+          <label
+            htmlFor="nume"
+            className="block mb-1 font-medium text-teal-700"
+          >
             Nume complet *
           </label>
           <input
@@ -88,7 +144,10 @@ export default function ProgramarePage() {
 
         {/* Email */}
         <div>
-          <label htmlFor="email" className="block mb-1 font-medium text-teal-700">
+          <label
+            htmlFor="email"
+            className="block mb-1 font-medium text-teal-700"
+          >
             Email *
           </label>
           <input
@@ -105,7 +164,10 @@ export default function ProgramarePage() {
 
         {/* Telefon */}
         <div>
-          <label htmlFor="telefon" className="block mb-1 font-medium text-teal-700">
+          <label
+            htmlFor="telefon"
+            className="block mb-1 font-medium text-teal-700"
+          >
             Telefon
           </label>
           <input
@@ -121,7 +183,10 @@ export default function ProgramarePage() {
 
         {/* Terapie (select) */}
         <div>
-          <label htmlFor="terapie" className="block mb-1 font-medium text-teal-700">
+          <label
+            htmlFor="terapie"
+            className="block mb-1 font-medium text-teal-700"
+          >
             Alege terapia *
           </label>
           <select
@@ -142,7 +207,10 @@ export default function ProgramarePage() {
 
         {/* Data */}
         <div>
-          <label htmlFor="data" className="block mb-1 font-medium text-teal-700">
+          <label
+            htmlFor="data"
+            className="block mb-1 font-medium text-teal-700"
+          >
             Data preferată *
           </label>
           <input
@@ -179,7 +247,10 @@ export default function ProgramarePage() {
 
         {/* Comentarii */}
         <div>
-          <label htmlFor="comentarii" className="block mb-1 font-medium text-teal-700">
+          <label
+            htmlFor="comentarii"
+            className="block mb-1 font-medium text-teal-700"
+          >
             Comentarii (opțional)
           </label>
           <textarea
@@ -202,5 +273,5 @@ export default function ProgramarePage() {
         </button>
       </form>
     </section>
-  )
+  );
 }
