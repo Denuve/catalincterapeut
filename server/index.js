@@ -16,6 +16,11 @@ app.use(express.json());
 
 app.use("/programari", programariRoutes);
 
+// Protected
+app.get('/api/admin/dashboard', protect, (req, res) => {
+  res.json({ message: 'Bine ai venit în dashboard!', user: req.user })
+})
+
 app.listen(PORT, () => {
   console.log(`Server backend pornit pe http://localhost:${PORT}`);
 });
