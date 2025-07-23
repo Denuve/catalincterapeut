@@ -1,22 +1,40 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function AdminLoginForm() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
 
-    // Temporar, poți schimba cu validare reală mai târziu
-    if (email === 'admin@example.com' && password === 'admin123') {
-      window.location.href = '/admin/dashboard'
-    } else {
-      setError('Date incorecte')
+    try {
+      const res = await fetch("http://localhost:5000/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.message || "Eroare la autentificare");
+        return;
+      }
+
+      const data = await res.json();
+      localStorage.setItem("adminToken", data.token);
+
+      // Redirect to dashboard
+      router.push("/admin/dashboard");
+    } catch (err) {
+      setError("Eroare de rețea sau server");
     }
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -32,7 +50,9 @@ export default function AdminLoginForm() {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Parolă</label>
+        <label className="block text-sm font-medium text-gray-700">
+          Parolă
+        </label>
         <input
           type="password"
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
@@ -51,5 +71,5 @@ export default function AdminLoginForm() {
         Conectează-te
       </button>
     </form>
-  )
+  );
 }

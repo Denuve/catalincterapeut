@@ -4,10 +4,10 @@ import bcrypt from 'bcrypt'
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  role: { type: String, default: 'user' }, // poți avea roluri: user, admin etc.
+  role: { type: String, default: 'user' }, 
 })
 
-// Hash password înainte de salvare
+
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next()
   const salt = await bcrypt.genSalt(10)
@@ -15,7 +15,7 @@ userSchema.pre('save', async function (next) {
   next()
 })
 
-// Metodă pentru verificarea parolei
+
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password)
 }
