@@ -9,9 +9,7 @@ dotenv.config()
 const createAdmin = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI, {
-      dbName: 'ccterapeut',
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+      dbName: 'ccterapeut'
     })
 
     console.log('--- Creare utilizator nou ---')
