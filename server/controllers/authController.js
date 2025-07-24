@@ -4,15 +4,15 @@ import jwt from 'jsonwebtoken'
 export const loginAdmin = async (req, res) => {
   const { email, password } = req.body
   try {
-    const user = await User.findOne({ email })
+    const user = await User.findOne({ email: email.trim().toLowerCase() })
 
     if (!user || user.role !== 'admin') {
-      return res.status(401).json({ message: 'Email sau parolă incorecte' })
+      return res.status(401).json({ message: 'Email sau parolă incorecte1' })
     }
 
     const isMatch = await user.matchPassword(password)
     if (!isMatch) {
-      return res.status(401).json({ message: 'Email sau parolă incorecte' })
+      return res.status(401).json({ message: 'Email sau parolă incorecte2' })
     }
 
     const token = jwt.sign(
@@ -23,6 +23,6 @@ export const loginAdmin = async (req, res) => {
 
     res.json({ token })
   } catch (error) {
-    res.status(500).json({ message: 'Eroare server' })
+    res.status(500).json({ message: `${error}` })
   }
 }
