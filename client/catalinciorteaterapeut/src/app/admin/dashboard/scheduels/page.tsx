@@ -1,196 +1,96 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useState, useCallback } from "react";
 
-const sampleAppointments = [
-  {
-    id: 1,
-    nume: "Ion Popescu",
-    email: "ion.popescu@email.com",
-    telefon: "0712345678",
-    terapie: "Reiki",
-    data: "2025-08-01",
-    ora: "10:00",
-    comentarii: "Vrea ședință de relaxare",
-  },
-  {
-    id: 2,
-    nume: "Maria Ionescu",
-    email: "maria.ionescu@email.com",
-    telefon: "0722333444",
-    terapie: "Inforenergetică",
-    data: "2025-07-30",
-    ora: "14:00",
-    comentarii: "",
-  },
-  {
-    id: 3,
-    nume: "Andrei Vasilescu",
-    email: "andrei.v@email.com",
-    telefon: "0733555666",
-    terapie: "Șamanism",
-    data: "2025-07-28",
-    ora: "09:00",
-    comentarii: "Primează meditația",
-  },
-  // mai adaugă dacă vrei
-];
-
-function toggleSortOrder(currentOrder: string) {
-  if (currentOrder === "none") return "asc";
-  if (currentOrder === "asc") return "desc";
-  return "none";
+interface Programare {
+  _id: string;
+  nume: string;
+  email: string;
+  telefon: string;
+  terapie: string;
+  data: string;
+  ora: string;
+  comentarii?: string;
 }
 
 export default function ProgramariPage() {
-  const [searchName, setSearchName] = useState("");
-  const [sortNume, setSortNume] = useState("none"); // 'asc', 'desc', 'none'
-  const [sortData, setSortData] = useState("none"); // 'asc', 'desc', 'none'
+  const [programari, setProgramari] = useState<Programare[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Resetam cealaltă sortare când aplicăm una nouă (optional)
-  const onSortNumeClick = () => {
-    setSortNume(toggleSortOrder(sortNume));
-    setSortData("none");
-  };
-
-  const onSortDataClick = () => {
-    setSortData(toggleSortOrder(sortData));
-    setSortNume("none");
-  };
-
-  const filteredAndSorted = useMemo(() => {
-    let data = [...sampleAppointments];
-
-    // Filtrare după text în nume, case insensitive
-    if (searchName.trim() !== "") {
-      const lowerSearch = searchName.toLowerCase();
-      data = data.filter((a) => a.nume.toLowerCase().includes(lowerSearch));
+  const fetchProgramari = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("http://localhost:5000/programari");
+      if (!res.ok) throw new Error("Eroare la încărcarea programărilor");
+      const data: Programare[] = await res.json();
+      setProgramari(data);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Eroare necunoscută");
+      }
+    } finally {
+      setLoading(false);
     }
+  }, []);
 
-    // Sortare după Nume dacă e setată
-    if (sortNume !== "none") {
-      data.sort((a, b) => {
-        if (a.nume < b.nume) return sortNume === "asc" ? -1 : 1;
-        if (a.nume > b.nume) return sortNume === "asc" ? 1 : -1;
-        return 0;
-      });
-    }
-
-    // Sortare după Data dacă e setată
-    if (sortData !== "none") {
-      data.sort((a, b) => {
-        const dateA = new Date(a.data);
-        const dateB = new Date(b.data);
-        if (dateA < dateB) return sortData === "asc" ? -1 : 1;
-        if (dateA > dateB) return sortData === "asc" ? 1 : -1;
-        return 0;
-      });
-    }
-
-    return data;
-  }, [searchName, sortNume, sortData]);
-
-  // Simboluri pentru sortare în header
-  const sortSymbol = (order: string) => {
-    if (order === "asc") return "▲";
-    if (order === "desc") return "▼";
-    return "";
-  };
+  useEffect(() => {
+    fetchProgramari();
+  }, [fetchProgramari]);
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <h2 className="text-3xl font-extrabold mb-6 text-[#134e4a]">
-        Programări
-      </h2>
-
-      <div className="mb-6 max-w-sm">
-        <input
-          type="text"
-          placeholder="Caută după nume..."
-          value={searchName}
-          onChange={(e) => setSearchName(e.target.value)}
-          className="w-full border border-[#134e4a] rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#a7f3d0]"
-        />
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-3xl font-extrabold text-[#134e4a]">Programări</h2>
+        <button
+          onClick={fetchProgramari}
+          disabled={loading}
+          className="px-4 py-2 rounded-lg bg-[#134e4a] text-white hover:bg-[#0f3b34] transition disabled:opacity-50"
+        >
+          {loading ? "Se încarcă..." : "Reîncarcă"}
+        </button>
       </div>
+
+      {error && <p className="mb-4 text-red-500">{error}</p>}
 
       <div className="overflow-x-auto border border-[#134e4a] rounded-lg shadow">
         <table className="min-w-full divide-y divide-[#134e4a]">
           <thead className="bg-[#134e4a] text-white">
             <tr>
-              <th
-                scope="col"
-                className="cursor-pointer px-6 py-3 text-left text-sm font-semibold flex items-center select-none"
-                onClick={onSortNumeClick}
-                title="Sortează după nume"
-              >
-                Nume&nbsp;<span>{sortSymbol(sortNume)}</span>
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-sm font-semibold"
-              >
-                Email
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-sm font-semibold"
-              >
-                Telefon
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-sm font-semibold"
-              >
-                Terapie
-              </th>
-              <th
-                scope="col"
-                className="cursor-pointer px-6 py-3 text-left text-sm font-semibold flex items-center select-none"
-                onClick={onSortDataClick}
-                title="Sortează după data programării"
-              >
-                Data&nbsp;<span>{sortSymbol(sortData)}</span>
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-sm font-semibold"
-              >
-                Ora
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-sm font-semibold"
-              >
-                Comentarii
-              </th>
+              <th className="px-6 py-3 text-left text-sm font-semibold">Nume</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold">Email</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold">Telefon</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold">Terapie</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold">Data</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold">Ora</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold">Comentarii</th>
             </tr>
           </thead>
-
           <tbody className="divide-y divide-[#134e4a] bg-white text-[#134e4a]">
-            {filteredAndSorted.length === 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
+                  Se încarcă...
+                </td>
+              </tr>
+            ) : programari.length === 0 ? (
               <tr>
                 <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
                   Nu există programări.
                 </td>
               </tr>
             ) : (
-              filteredAndSorted.map((p) => (
-                <tr
-                  key={p.id}
-                  className="hover:bg-[#a7f3d0]/30 transition-colors cursor-default"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap font-semibold">
-                    {p.nume}
-                  </td>
+              programari.map((p) => (
+                <tr key={p._id} className="hover:bg-[#a7f3d0]/30 transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap font-semibold">{p.nume}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{p.email}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{p.telefon}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{p.terapie}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {new Date(p.data).toLocaleDateString("ro-RO", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                    })}
+                    {new Date(p.data).toLocaleDateString("ro-RO")}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">{p.ora}</td>
                   <td className="px-6 py-4">{p.comentarii || "-"}</td>

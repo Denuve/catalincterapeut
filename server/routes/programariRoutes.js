@@ -1,8 +1,9 @@
 import express from 'express'
-import { createProgramare } from '../controllers/programariController.js'
+import { createProgramare, getProgramari } from '../controllers/programariController.js'
 
 const router = express.Router()
 
-router.post('/programari', createProgramare)
+router.post('/programare', createProgramare)
+router.get('/programari', getProgramari)
 
 export default router

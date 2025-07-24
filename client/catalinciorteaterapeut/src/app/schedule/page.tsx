@@ -66,7 +66,7 @@ export default function ProgramarePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:5000/programari", {
+      const response = await fetch("http://localhost:5000/programare", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

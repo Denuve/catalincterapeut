@@ -26,3 +26,13 @@ export const createProgramare = async (req, res) => {
     res.status(500).json({ error: 'Eroare la salvarea programării' })
   }
 }
+
+export const getProgramari = async (req, res) => {
+  try {
+    const programari = await Programare.find().sort({ data: 1 }) // sortare crescătoare după dată
+    res.status(200).json(programari)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: 'Eroare la preluarea programărilor' })
+  }
+}
