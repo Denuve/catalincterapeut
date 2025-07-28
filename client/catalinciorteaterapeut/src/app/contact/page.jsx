@@ -12,16 +12,56 @@ export default function ContactPage() {
   })
 
   const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
+  const validateEmail = (email) => {
+    // simplă validare email
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value })
+    if (error) setError('')
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log('Contact:', formData)
-    setSubmitted(true)
-    setFormData({ nume: '', email: '', mesaj: '' })
+    setError('')
+    setSubmitted(false)
+
+    if (!formData.nume.trim()) {
+      setError('Te rog să introduci numele.')
+      return
+    }
+    if (!validateEmail(formData.email)) {
+      setError('Te rog să introduci un email valid.')
+      return
+    }
+    if (!formData.mesaj.trim()) {
+      setError('Te rog să introduci mesajul.')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const res = await fetch('http://localhost:5000/messages/sendMessage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+
+      if (!res.ok) {
+        throw new Error('Eroare la trimiterea mesajului. Încearcă din nou.')
+      }
+
+      setSubmitted(true)
+      setFormData({ nume: '', email: '', mesaj: '' })
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -54,6 +94,16 @@ export default function ContactPage() {
         </motion.div>
       )}
 
+      {error && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="mb-6 p-4 bg-red-100 text-red-700 rounded-lg text-center font-semibold"
+        >
+          {error}
+        </motion.div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-2xl shadow-md">
         <div>
           <label htmlFor="nume" className="block mb-1 font-medium text-teal-700">
@@ -65,8 +115,9 @@ export default function ContactPage() {
             name="nume"
             value={formData.nume}
             onChange={handleChange}
+            disabled={loading}
             required
-            className="w-full border border-teal-300 rounded-lg px-3 py-2 focus:outline-teal-500"
+            className="w-full border border-teal-300 rounded-lg px-3 py-2 focus:outline-teal-500 disabled:opacity-50"
             placeholder="Numele tău"
           />
         </div>
@@ -81,8 +132,9 @@ export default function ContactPage() {
             name="email"
             value={formData.email}
             onChange={handleChange}
+            disabled={loading}
             required
-            className="w-full border border-teal-300 rounded-lg px-3 py-2 focus:outline-teal-500"
+            className="w-full border border-teal-300 rounded-lg px-3 py-2 focus:outline-teal-500 disabled:opacity-50"
             placeholder="exemplu@domain.com"
           />
         </div>
@@ -96,18 +148,22 @@ export default function ContactPage() {
             name="mesaj"
             value={formData.mesaj}
             onChange={handleChange}
+            disabled={loading}
             required
             rows={5}
-            className="w-full border border-teal-300 rounded-lg px-3 py-2 focus:outline-teal-500"
+            className="w-full border border-teal-300 rounded-lg px-3 py-2 focus:outline-teal-500 disabled:opacity-50"
             placeholder="Scrie mesajul tău aici..."
           />
         </div>
 
         <button
           type="submit"
-          className="w-full bg-teal-600 text-white py-3 rounded-xl font-semibold hover:bg-teal-700 transition"
+          disabled={loading}
+          className={`w-full py-3 rounded-xl font-semibold transition ${
+            loading ? 'bg-teal-400 cursor-not-allowed' : 'bg-teal-600 hover:bg-teal-700 text-white'
+          }`}
         >
-          Trimite mesaj
+          {loading ? 'Se trimite...' : 'Trimite mesaj'}
         </button>
       </form>
 

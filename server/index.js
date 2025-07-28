@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import programariRoutes from "./routes/programariRoutes.js";
+import messageRoutes from "./routes/messageRoutes.js";
 
 import { loginAdmin } from './controllers/authController.js';
 import { protect } from './middleware/authMiddleware.js';
@@ -18,6 +19,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/", programariRoutes);
+app.use("/messages", messageRoutes);
 
 // Protected
 app.get('/api/admin/dashboard', protect, (req, res) => {
